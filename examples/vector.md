@@ -1,5 +1,7 @@
 # Vector
 
+**IMPORTANT**: never keep pointers or references to elements of a vector, because when a vector reallocates, those pointers and references are no longer valid.
+
 ## Allocation and Alignment
 
 `Vector` must handle objects that are not default-constructible. Having a `T*` array inside would prevent preallocation, because object would have to be constructed using their default constructors. This is why a `char*` or `std::byte*` is used instead, but this introduces some complexity. The array must be aligned when allocated so that it corresponds to the alignment requirements of the `T`. As for dynamically allocated arrays, `::operator new(size, std::align_val_t{alignof(T)})` or `std::aligned_alloc(alignof(T), size)` can be used. When `::operator new(size, align)` is used to allocate the memory, the corresponding `::operator delete(ptr, align)` must be used to free the memory.

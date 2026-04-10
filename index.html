@@ -166,13 +166,13 @@
         contentEl.innerHTML = '<p>Loading...</p>';
 
         try {
-            const resp = await fetch(`pages/${pagePath}.md`);
+            const resp = await fetch(`${pagePath}.md`);
             if (!resp.ok) throw new Error(`Page not found (${resp.status})`);
             const md = await resp.text();
             contentEl.innerHTML = marked.parse(md);
             document.title = pagePath.split('/').pop() + ' - My Notes';
         } catch (err) {
-            contentEl.innerHTML = `<h1>404</h1><p>Could not load <code>pages/${pagePath}.md</code></p>`;
+            contentEl.innerHTML = `<h1>404</h1><p>Could not load <code>${pagePath}.md</code></p>`;
         }
 
         updateActiveNav(pagePath);

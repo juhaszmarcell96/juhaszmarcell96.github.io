@@ -1,0 +1,11 @@
+The C++ abstract machine is the formal computational model defined by the C++ standard that specifies how a well-formed program behaves. Rather than describing what any particular CPU or OS does, the standard defines an idealized machine with its own rules, and every conforming compiler must produce code whose *observable behavior* matches what this abstract machine would produce.
+
+A few key aspects:
+
+**Observable behavior** is narrowly defined: it includes reads/writes to `volatile` objects, calls to I/O library functions, and (at program termination) the final state of data written to files. Everything else - register allocation, instruction ordering, memory layout details - is left to the compiler as long as the observable behavior is preserved. This is the foundation of the "as-if rule."
+
+**Sequencing and evaluation order.** The abstract machine defines relationships like "sequenced before" that determine the legal orderings of expression evaluation. Where the standard leaves ordering unspecified or indeterminate, the compiler is free to pick any valid ordering (or different ones on different runs). Undefined behavior arises when you violate the abstract machine's rules - for example, two unsequenced writes to the same scalar - and at that point the standard imposes *no* requirements at all.
+
+**The memory model** (especially since C++11) extends the abstract machine to multiple threads. It defines atomic operations, memory orders (`relaxed`, `acquire`, `release`, `seq_cst`), and a "happens-before" relation that determines when a write in one thread is visible to a read in another. Without proper synchronization, concurrent accesses to the same non-atomic variable constitute a data race, which is undefined behavior in the abstract machine.
+
+**Why it matters practically:** understanding the abstract machine is what tells you *why* certain code is buggy even if it "works" on your machine. A compiler is allowed to optimize based on the assumption that your code follows the abstract machine's rules. If you have a data race or signed integer overflow, the compiler isn't just "allowed to do something weird" - it's allowed to assume it *never happens* and optimize accordingly, which can remove checks, reorder code, or eliminate entire branches. The abstract machine is the contract between you and the compiler.

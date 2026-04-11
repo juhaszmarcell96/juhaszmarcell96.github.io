@@ -17,25 +17,79 @@
         /* --- Navigation --- */
         nav {
             background: #24292e;
-            padding: 12px 24px;
+            padding: 0 24px;
             position: sticky;
             top: 0;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            height: 48px;
         }
-        nav a {
+        nav .site-title {
             color: #fff;
             text-decoration: none;
-            margin-right: 20px;
-            font-size: 14px;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        nav a:hover, nav a.active { opacity: 1; }
-        nav .site-title {
             font-weight: 600;
             font-size: 16px;
-            opacity: 1;
             margin-right: 32px;
+            flex-shrink: 0;
+        }
+
+        /* Dropdown container */
+        .nav-dropdown {
+            position: relative;
+            margin-right: 4px;
+        }
+        .nav-dropdown-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            padding: 14px 12px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.15s;
+            font-family: inherit;
+        }
+        .nav-dropdown-toggle:hover,
+        .nav-dropdown.open .nav-dropdown-toggle {
+            opacity: 1;
+        }
+        .nav-dropdown-toggle::after {
+            content: ' ▾';
+            font-size: 10px;
+        }
+
+        /* Dropdown menu */
+        .nav-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            min-width: 200px;
+            padding: 4px 0;
+            z-index: 20;
+        }
+        .nav-dropdown.open .nav-dropdown-menu {
+            display: block;
+        }
+        .nav-dropdown-menu a {
+            display: block;
+            padding: 8px 16px;
+            color: #24292e;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.1s;
+        }
+        .nav-dropdown-menu a:hover {
+            background: #f6f8fa;
+        }
+        .nav-dropdown-menu a.active {
+            color: #0366d6;
+            font-weight: 600;
         }
 
         /* --- Main content area --- */
@@ -127,18 +181,38 @@
 <nav>
     <a href="#" class="site-title" data-page="">Notes</a>
 
-    <a href="#" data-page="constructors/basics">Constructors: Basics</a>
-    <a href="#" data-page="constructors/initialization">Constructors: Initialization</a>
+    <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle">Constructors</button>
+        <div class="nav-dropdown-menu">
+            <a href="#" data-page="constructors/basics">Basics</a>
+            <a href="#" data-page="constructors/initialization">Initialization</a>
+        </div>
+    </div>
 
-    <a href="#" data-page="storage/new">Storage: new</a>
-    <a href="#" data-page="storage/launder">Storage: std::launder</a>
+    <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle">Storage</button>
+        <div class="nav-dropdown-menu">
+            <a href="#" data-page="storage/new">new</a>
+            <a href="#" data-page="storage/launder">std::launder</a>
+        </div>
+    </div>
 
-    <a href="#" data-page="examples/memory_pool">Example: Memory Pool</a>
-    <a href="#" data-page="examples/unique_ptr">Example: Unique Pointer</a>
-    <a href="#" data-page="examples/any">Example: Any</a>
-    <a href="#" data-page="examples/vector">Example: Vector</a>
-    
-    <a href="#" data-page="containers/ranges">Containers: Ranges</a>
+    <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle">Examples</button>
+        <div class="nav-dropdown-menu">
+            <a href="#" data-page="examples/memory_pool">Memory Pool</a>
+            <a href="#" data-page="examples/unique_ptr">Unique Pointer</a>
+            <a href="#" data-page="examples/any">Any</a>
+            <a href="#" data-page="examples/vector">Vector</a>
+        </div>
+    </div>
+
+    <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle">Containers</button>
+        <div class="nav-dropdown-menu">
+            <a href="#" data-page="containers/ranges">Ranges</a>
+        </div>
+    </div>
 </nav>
 
 <main>
@@ -164,15 +238,12 @@
         <div class="page-index">
             <a href="#" data-page="constructors/basics">Constructors: Basics</a>
             <a href="#" data-page="constructors/initialization">Constructors: Initialization</a>
-
             <a href="#" data-page="storage/new">Storage: new</a>
             <a href="#" data-page="storage/launder">Storage: std::launder</a>
-            
             <a href="#" data-page="examples/memory_pool">Example: Memory Pool</a>
             <a href="#" data-page="examples/unique_ptr">Example: Unique Pointer</a>
             <a href="#" data-page="examples/any">Example: Any</a>
             <a href="#" data-page="examples/vector">Example: Vector</a>
-            
             <a href="#" data-page="containers/ranges">Containers: Ranges</a>
         </div>
     `;
@@ -181,7 +252,6 @@
     async function loadPage(pagePath) {
         if (!pagePath) {
             contentEl.innerHTML = HOME_HTML;
-            bindInternalLinks(contentEl);
             updateActiveNav('');
             document.title = 'Notes';
             return;
@@ -206,31 +276,38 @@
 
     // ---- Highlight the active nav link ----
     function updateActiveNav(pagePath) {
-        document.querySelectorAll('nav a').forEach(a => {
+        document.querySelectorAll('.nav-dropdown-menu a').forEach(a => {
             a.classList.toggle('active', a.dataset.page === pagePath);
         });
     }
 
-    // ---- Make internal data-page links work ----
-    function bindInternalLinks(root) {
-        root.querySelectorAll('a[data-page]').forEach(a => {
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                const page = a.dataset.page;
-                history.pushState({ page }, '', page ? `#${page}` : '#');
-                loadPage(page);
-            });
+    // ---- Dropdown toggle logic ----
+    document.querySelectorAll('.nav-dropdown-toggle').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const dropdown = btn.parentElement;
+            const wasOpen = dropdown.classList.contains('open');
+            // Close all dropdowns first
+            document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+            if (!wasOpen) dropdown.classList.add('open');
         });
-    }
+    });
 
-    // ---- Navigation click handler ----
-    document.querySelector('nav').addEventListener('click', e => {
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+    });
+
+    // ---- Navigation click handler (for data-page links in nav and home) ----
+    document.addEventListener('click', e => {
         const link = e.target.closest('a[data-page]');
         if (!link) return;
         e.preventDefault();
         const page = link.dataset.page;
         history.pushState({ page }, '', page ? `#${page}` : '#');
         loadPage(page);
+        // Close any open dropdown
+        document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
     });
 
     // ---- Handle browser back/forward ----

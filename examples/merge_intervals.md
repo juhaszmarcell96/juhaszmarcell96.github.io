@@ -1,5 +1,6 @@
 # Merge Intervals
 
+{% raw %}
 ```cpp
 // =============================================================================
 //
@@ -95,3 +96,4 @@ void test_merge_intervals()
     std::cout << "All Merge Intervals tests passed.\n\n";
 }
 ```
+{% endraw %}
